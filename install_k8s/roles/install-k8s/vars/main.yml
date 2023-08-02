@@ -1,0 +1,29 @@
+---
+# vars file for install-k8s
+
+##docker urls
+url_docker: 'https://get.docker.com'
+url_key_docker: 'https://download.docker.com/linux/ubuntu/gpg'
+
+##k8s urls
+url_key_k8s: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
+url_repo_k8s: 'https://apt.kubernetes.io/'
+
+##folder keys
+folder_keys: '/etc/apt/keyrings'
+folder_share_keys: '/usr/share/keyrings'
+
+##docker key folders
+folder_key_docker: '/etc/apt/keyrings/docker.asc'
+folder_apt_docker: '/etc/apt/sources.list.d/docker.list'
+
+##k8s key folders
+folder_key_k8s: '/etc/apt/keyrings/kubernetes-archive-keyring.asc'
+folder_apt_docker: '/etc/apt/sources.list.d/kubernetes.list'
+
+##
+docker_version: '23.0.4'
+k8s_version: '1.26.3-00'
+crio_version: '1.26'
+#os_version: "xUbuntu_$(cat /etc/os-release | grep VERSION_ID | awk -F'=' '{print $2}' | tr -d '"')'"
+os_version: 'xUbuntu_22.04'

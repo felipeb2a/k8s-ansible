@@ -1,0 +1,73 @@
+- name: Reboot host and wait for it to restart
+  reboot:
+    msg: "Reboot initiated by Ansible"
+    connect_timeout: 5
+    reboot_timeout: 600
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: whoami
+
+- name: "Removendo cluster antigo"
+  command:
+    kubeadm reset --force
+  register: kubeadm_reset
+
+- name: "Inicializando o cluster k8s Step 1"
+  command:
+    kubeadm config images pull {{var_socket_containerd}}
+  register: kubeadm_config_images_pull
+
+- name: "Inicializando o cluster k8s Step 2"
+  command:
+    kubeadm init {{var_socket_containerd}} 
+  register: kubeadm_init
+
+- name: "Criando o diretório .kube"
+  file:
+    #path: '/home/{{ user }}/.kube'
+    path: '$HOME/.kube'
+    state: directory
+
+- name: "Linkando o arquivo admin.conf para o $HOME/.kube/config"
+  file:
+    src: '/etc/kubernetes/admin.conf'
+    #dest: '/home/{{ user }}/.kube/config'
+    dest: '$HOME/.kube/config'
+    owner: root
+    group: root
+    state: link
+
+- name: "Configurando o pod network Weavenet"
+  shell: kubectl apply -f {{ default_url_weavenet }}
+  register: weavenet_result
+
+- name: "Pegando o token para adicionar os workers no cluster"
+  shell: kubeadm token list | cut -d ' ' -f1 | sed -n '2p'
+  register: k8s_token
+
+- name: "CA Hash"
+  shell: openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+  register: k8s_master_ca_hash
+
+- name: "Get join token"
+  shell: kubeadm token create --print-join-command
+  register: k8s_master_join_token
+
+- name: "Adicionando o token e o hash em um dummy host"
+  add_host:
+    name: "K8S_TOKEN_HOLDER"
+    token: "{{ k8s_token.stdout }}"
+    hash: "{{ k8s_master_ca_hash.stdout }}"
+    join: "{{ k8s_master_join_token.stdout }}"
+
+- name: ""
+  debug:
+    msg: "[MASTER] K8S_TOKEN_HOLDER - O token eh {{ hostvars['K8S_TOKEN_HOLDER']['token'] }}"
+
+- name: ""
+  debug:
+    msg: "[MASTER] K8S_TOKEN_HOLDER - O hash eh {{ hostvars['K8S_TOKEN_HOLDER']['hash'] }}"
+
+- name: ""
+  debug:
+    msg: "[MASTER] K8S_TOKEN_HOLDER - O comando join cluster eh {{ hostvars['K8S_TOKEN_HOLDER']['join'] }}"

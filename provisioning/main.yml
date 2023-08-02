@@ -1,0 +1,64 @@
+## role all hosts
+- hosts: all
+  become: yes
+  user: administrator
+  gather_facts: no
+  pre_tasks:
+  - name: 'Atualizando o repo'
+    raw: 'apt -y update'
+
+  - name: 'Upgrade S.O.'
+    raw: 'apt -y upgrade'
+
+  - name: 'Intalando o apt-utils'
+    raw: 'apt -y install apt-utils'
+    
+  - name: 'Intalando o build-essential'
+    raw: 'apt -y install build-essential'
+
+  - name: 'Intalando o bash-completion'
+    raw: 'apt -y install bash-completion'
+
+  - name: 'Intalando o sudo'
+    raw: 'apt -y install sudo'
+
+  - name: 'Intalando o netcat'
+    raw: 'apt -y install netcat'
+
+  - name: 'Intalando o tar'
+    raw: 'apt -y install tar'
+
+  - name: 'Intalando o bzip2'
+    raw: 'apt -y install bzip2'
+
+  - name: 'Intalando o ufw'
+    raw: 'apt -y install ufw'
+
+#  - name: 'Adicionando o repo do python'
+#    ansible.builtin.apt_repository:
+#      repo: 'ppa:deadsnakes/ppa'
+#      state: present
+#      filename: python-deadsnakes
+
+#  - name: 'Instalando o python'
+#    raw: 'apt -y install python39'
+
+#  - name: 'Removendo o link simbolico python antigo'
+#    raw: 'rm /usr/bin/python'
+
+#  - name: 'Adicionando o link simbolico do python mais recente'
+#    raw: 'ln -s python3.9 /usr/bin/python'
+
+## role hosts k8s-master
+- hosts: k8s-master
+  become: yes
+  user: administrator
+  roles:
+  - { role: configurando-instancias-master, tags: ['configurando_instancias_master_k8s'] }
+
+## role hosts k8s-workers
+- hosts: k8s-workers
+  become: yes
+  user: administrator
+  roles:
+  - { role: configurando-instancias-workers, tags: ['configurando_instancias_workers_role'] } 

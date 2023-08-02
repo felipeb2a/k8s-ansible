@@ -1,0 +1,30 @@
+- name: Permit traffic in default zone on port 22/tcp [SSH]
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 10250/tcp [Kubelet API]
+  community.general.ufw:
+    rule: allow
+    port: '10250'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 10255/tcp [Kubelet API Read-only]
+  community.general.ufw:
+    rule: allow
+    port: '10255'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 30000-32767/tcp [NodePort Services]
+  community.general.ufw:
+    rule: allow
+    port: 30000:32767
+    proto: tcp
+    state: enabled
+
+- name: modprobe br_netfilter Step 3
+  shell: modprobe br_netfilter

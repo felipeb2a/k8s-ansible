@@ -1,0 +1,14 @@
+[all:vars]
+var_socket_containerd = "--cri-socket=unix:///var/run/containerd/containerd.sock"
+
+[k8s-master]
+#vbx-k8s-master
+k8s-master-teste
+
+[k8s-workers]
+#vbx-k8s-worker-01
+k8s-worker-01-teste
+
+[k8s-workers:vars]
+K8S_MASTER_NODE_IP=15.0.7.87
+K8S_API_SECURE_PORT=6443

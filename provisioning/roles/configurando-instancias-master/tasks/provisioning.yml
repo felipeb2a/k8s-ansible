@@ -1,0 +1,79 @@
+- name: Permit traffic in default zone on port 22/tcp [SSH]
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 6443/tcp [kube-apiserver]
+  community.general.ufw:
+    rule: allow
+    port: '6443'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 2379-2380/tcp [etcd server API]
+  community.general.ufw:
+    rule: allow
+    port: 2379:2380
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 10250/tcp [Kubelet API]
+  community.general.ufw:
+    rule: allow
+    port: '10250'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 10251/tcp [kube-scheduler]
+  community.general.ufw:
+    rule: allow
+    port: '10251'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 10252/tcp [kube-controller-manager]
+  community.general.ufw:
+    rule: allow
+    port: '10252'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 10255/tcp [Kubelet API Read-only]
+  community.general.ufw:
+    rule: allow
+    port: '10255'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 10259/tcp [kube-scheduler]
+  community.general.ufw:
+    rule: allow
+    port: '10259'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 10257/tcp [kube-controller-manager]
+  community.general.ufw:
+    rule: allow
+    port: '10257'
+    proto: tcp
+    state: enabled
+
+- name: Permit traffic in default zone on port 6783/udp [WeaveNet]
+  community.general.ufw:
+    rule: allow
+    port: '6783'
+    proto: udp
+    state: enabled
+
+- name: Permit traffic in default zone on port 6784/udp [WeaveNet]
+  community.general.ufw:
+    rule: allow
+    port: '6784'
+    proto: udp
+    state: enabled
+
+- name: modprobe br_netfilter Step 3
+  shell: modprobe br_netfilter

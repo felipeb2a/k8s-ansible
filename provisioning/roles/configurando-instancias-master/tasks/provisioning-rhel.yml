@@ -1,0 +1,64 @@
+#- name: Criando o diretório de teste
+#  file:
+#    path: ~/teste
+#    state: directory
+
+- name: Permit traffic in default zone on port 22/tcp [SSH]
+  ansible.posix.firewalld:
+    port: 22/tcp
+    permanent: yes
+    state: enabled
+
+- name: Permit traffic in default zone on port 2379-2380/tcp [etcd server API]
+  ansible.posix.firewalld:
+    port: 2379-2380/tcp
+    permanent: yes
+    state: enabled
+
+- name: Permit traffic in default zone on port 6443/tcp [kube-apiserver]
+  ansible.posix.firewalld:
+    port: 6443/tcp
+    permanent: yes
+    state: enabled
+
+- name: Permit traffic in default zone on port 10250/tcp [Kubelet API]
+  ansible.posix.firewalld:
+    port: 10250/tcp
+    permanent: yes
+    state: enabled
+
+- name: Permit traffic in default zone on port 10251/tcp [kube-scheduler]
+  ansible.posix.firewalld:
+    port: 10251/tcp
+    permanent: yes
+    state: enabled
+
+- name: Permit traffic in default zone on port 10252/tcp [kube-controller-manager]
+  ansible.posix.firewalld:
+    port: 10252/tcp
+    permanent: yes
+    state: enabled
+
+- name: Permit traffic in default zone on port 10255/tcp [Kubelet API Read-only]
+  ansible.posix.firewalld:
+    port: 10255/tcp
+    permanent: yes
+    state: enabled
+
+- name: Permit traffic in default zone on port 30000-32767/tcp [NodePort Services]
+  ansible.posix.firewalld:
+    port: 30000-32767/tcp
+    permanent: yes
+    state: enabled
+
+- name: Permit traffic in default zone on port 6783/udp [WeaveNet]
+  ansible.posix.firewalld:
+    port: 6783/udp
+    permanent: yes
+    state: enabled
+
+- name: Permit traffic in default zone on port 6784/udp [WeaveNet]
+  ansible.posix.firewalld:
+    port: 6784/udp
+    permanent: yes
+    state: enabled

@@ -1,0 +1,225 @@
+- name: Making iptables see aggregated traffic Step 1
+  shell: 
+    cmd: |
+      cat <<EOF | tee /etc/modules-load.d/k8s.conf
+      overlay
+      br_netfilter
+      ip_vs_rr
+      ip_vs_wrr
+      ip_vs_sh
+      nf_conntrack_ipv4
+      ip_vs
+      EOF
+
+- name: modprobe overlay Step 2
+  shell: modprobe overlay
+
+- name: modprobe br_netfilter Step 3
+  shell: modprobe br_netfilter
+
+- name: Making iptables see aggregated traffic Step 4
+  shell: 
+    cmd: |
+      cat <<EOF | tee /etc/sysctl.d/k8s.conf
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+      net.ipv4.ip_forward = 1
+      EOF
+
+- name: update sysctl Step 5
+  command: sysctl --system
+
+#- name: Install CRI-O Step 1
+#  shell: echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
+#
+#- name: Install CRI-O Step 2
+#  shell: apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9
+#
+#- name: Install CRI-O Step 3
+#  shell: apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6ED0E7B82643E131
+#
+#- name: Install CRI-O Step 4
+#  shell: mv /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d/buster-backports.gpg
+#
+#- name: Install CRI-O Atualizando o repo Step 5
+#  shell: apt -y update
+#
+#- name: Install CRI-O Step 6
+#  shell: apt install -y -t buster-backports libseccomp2 || apt update -y -t buster-backports libseccomp2
+#
+#- name: Install CRI-O Step 7
+#  shell: 
+#    cmd: |
+#      echo \
+#      "deb [signed-by=/usr/share/keyrings/libcontainers-archive-keyring.gpg] \
+#      https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ os_version }}/ /" \
+#      > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+#
+#- name: Install CRI-O Step 8
+#  shell: 
+#    cmd: |
+#      echo \
+#      "deb [signed-by=/usr/share/keyrings/libcontainers-crio-archive-keyring.gpg] \
+#      https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ crio_version }}/{{ os_version }}/ /" \
+#      > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:{{ crio_version }}.list
+#
+#- name: Install CRI-O Step 9
+#  shell: mkdir -p {{ folder_share_keys }}
+#
+#- name: Install CRI-O Step 10
+#  shell: curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ os_version }}/Release.key | gpg --dearmor -o {{ folder_share_keys }}/libcontainers-archive-keyring.gpg
+#
+#- name: Install CRI-O Step 11
+#  shell: curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ crio_version }}/{{ os_version }}/Release.key | gpg --dearmor -o {{ folder_share_keys }}/libcontainers-crio-archive-keyring.gpg
+#
+#- name: Install CRI-O Atualizando o repo Step 12
+#  shell: apt -y update
+#
+#- name: Install CRI-O Step 13
+#  apt:
+#    name: '{{ packages }}'
+#  vars:
+#    packages:
+#    - cri-o
+#    - cri-o-runc
+#    - containernetworking-plugins
+#
+#- name: Install CRI-O 14
+#  shell: systemctl daemon-reload && systemctl enable crio
+#
+#- name: Reboot host and wait for it to restart Step 15
+#  reboot:
+#    msg: "Reboot initiated by Ansible"
+#    connect_timeout: 5
+#    reboot_timeout: 600
+#    pre_reboot_delay: 0
+#    post_reboot_delay: 30
+#    test_command: whoami
+#
+#- name: Install CRI-O Step 16
+#  shell: systemctl start crio
+#
+#- name: Install CRI-O Step 17
+#  shell: apt-mark hold cri-o cri-o-runc
+#
+#- name: Install CRI-O Step 18
+#  lineinfile:
+#    path: /etc/crio/crio.conf
+#    regexp: '^conmon_cgroup'
+#    insertafter: '^# conmon_cgroup = ""'
+#    line: 'conmon_cgroup = "pod"'
+#
+#- name: Install CRI-O Step 19
+#  lineinfile:
+#    path: /etc/crio/crio.conf
+#    regexp: '^cgroup_manager'
+#    insertafter: '^# cgroup_manager = "systemd"'
+#    line: 'cgroup_manager = "cgroupfs"'
+#
+#- name: Install CRI-O Step 20
+#  lineinfile:
+#    path: /etc/crio/crio.conf
+#    regexp: '^pause_image'
+#    insertafter: '^# pause_image = "registry.k8s.io/pause:3.6"'
+#    line: 'pause_image="registry.k8s.io/pause:3.6"'
+
+- name: Add Docker’s official GPG key Step 1
+  shell: install -m 0755 -d {{ folder_keys }}
+
+- name: Add Docker’s official GPG key Step 2
+  get_url:
+    url: '{{ url_key_docker }}'
+    dest: '{{ folder_key_docker }}'
+    mode: '0755'
+    force: true
+
+- name: Use the following command to set up the repository
+  shell: 
+    cmd: |
+      echo \
+      "deb [arch="$(dpkg --print-architecture)" signed-by={{ folder_key_docker }}] https://download.docker.com/linux/ubuntu \
+      "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+      tee {{ folder_apt_docker }} > /dev/null
+
+- name: 'Atualizando o repo'
+  raw: 'apt -y update'
+
+- name: Install Docker Engine
+  apt:
+    name: '{{ packages }}'
+  vars:
+    packages:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    - docker-buildx-plugin
+    - docker-compose-plugin
+
+- name: Apt-mark hold docker
+  shell: apt-mark hold docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+- name: Configuration docker use the systemd
+  shell: 
+    cmd: |
+      cat <<EOF | tee /etc/docker/daemon.json
+      {
+        "exec-opts": ["native.cgroupdriver=systemd"],
+        "log-driver": "json-file",
+        "log-opts": {
+        "max-size": "100m"
+        },
+        "storage-driver": "overlay2"
+      }
+      EOF
+
+- name: Download the Google Cloud public signing key Step 1
+  get_url:
+    url: '{{ url_key_k8s }}'
+    dest: '{{ folder_key_k8s }}'
+    mode: '0755'
+    force: true
+
+- name: Add the Kubernetes apt repository Step 2
+  shell: 
+    cmd: |
+      echo "deb [signed-by={{ folder_key_k8s }}] https://apt.kubernetes.io/ kubernetes-xenial main" | tee {{ folder_apt_docker }}
+
+- name: 'Atualizando o repo'
+  raw: 'apt -y update'
+
+- name: Install Kubectl
+  apt:
+    name: '{{ packages }}'
+  vars:
+    packages:
+    - kubelet={{ k8s_version }}
+    - kubeadm={{ k8s_version }}
+    - kubectl={{ k8s_version }}
+
+- name: Apt-mark hold K8S
+  shell: apt-mark hold kubelet kubeadm kubectl
+
+- name: Enable kubectl autocompletion
+  shell: 
+    cmd: |
+      kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null | chmod a+r /etc/bash_completion.d/kubectl | echo "source <(kubectl completion bash)" >> /root/.bashrc
+
+- name: Configuration Cgroups Containerd
+  shell: 
+    cmd: |
+      mv /etc/containerd/config.toml /etc/containerd/config.toml.bkp | 
+      touch /etc/containerd/config.toml | 
+      cat <<EOF | tee /etc/containerd/config.toml
+      #disabled_plugins = ["cri"]
+      #disabled_plugins = [""]
+      version = 2
+      [plugins]
+        [plugins."io.containerd.grpc.v1.cri"]
+          sandbox_image = "registry.k8s.io/pause:3.2"
+          [plugins."io.containerd.grpc.v1.cri".containerd]
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+                runtime_type = "io.containerd.runc.v2"
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
+      EOF

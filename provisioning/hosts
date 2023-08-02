@@ -1,0 +1,7 @@
+[k8s-master]
+#vbx-k8s-master
+k8s-master-teste
+
+[k8s-workers]
+#vbx-k8s-worker-01
+k8s-worker-01-teste
